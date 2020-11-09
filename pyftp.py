@@ -20,6 +20,8 @@ class Client(cmd.Cmd):
         if host is not None:
             pass
             # self.do_open('')
+            # self.do_user('')
+        self.run = False
 
     def do_fake(self, fake):
         """Fake method for testing"""
@@ -30,7 +32,9 @@ class Client(cmd.Cmd):
         # sent as USER user and PASS password
         if arg == '':
             self.user = getpass.getuser()
-            self.user = input(f"Name ({self.host}:{self.user}): ").strip()
+            temp = input(f"Name ({self.host}:{self.user}): ").strip()
+            if temp != '':
+                self.user = temp
         else:
             self.user = arg
         self.password = getpass.getpass(prompt='Password: ').strip()
@@ -62,6 +66,9 @@ class Client(cmd.Cmd):
         finally:
             print(self.host)
             print(self.port)
+        if self.run:
+            self.control_sock.connect((self.host, self.port))
+            print(self.control_sock.recv(1024).decode())
 
     def _portmath(self, port):
         """Calculating port coordinates. Accepts either a port number to be separated or a tuple of integers to be
