@@ -1,0 +1,158 @@
+┌─[user@parrot]─[~/HackTheBox/Netmon-(10.10.10.152)/ftp]
+└──╼ $ftp netmon 
+Connected to netmon.
+220 Microsoft FTP Service
+Name (netmon:user): user
+331 Password required
+Password:
+530 User cannot log in.
+Login failed.
+Remote system type is Windows_NT.
+ftp> help
+Commands may be abbreviated.  Commands are:
+
+!		dir		mdelete		qc		site
+$		disconnect	mdir		sendport	size
+account		exit		mget		put		status
+append		form		mkdir		pwd		struct
+ascii		get		mls		quit		system
+bell		glob		mode		quote		sunique
+binary		hash		modtime		recv		tenex
+bye		help		mput		reget		tick
+case		idle		newer		rstatus		trace
+cd		image		nmap		rhelp		type
+cdup		ipany		nlist		rename		user
+chmod		ipv4		ntrans		reset		umask
+close		ipv6		open		restart		verbose
+cr		lcd		prompt		rmdir		?
+delete		ls		passive		runique
+debug		macdef		proxy		send
+ftp> user Anonymous
+331 Anonymous access allowed, send identity (e-mail name) as password.
+Password: 
+230 User logged in.
+Remote system type is Windows_NT.
+ftp> ls -a
+200 PORT command successful.
+125 Data connection already open; Transfer starting.
+11-20-16  09:46PM       <DIR>          $RECYCLE.BIN
+02-02-19  11:18PM                 1024 .rnd
+11-20-16  08:59PM               389408 bootmgr
+07-16-16  08:10AM                    1 BOOTNXT
+02-03-19  07:05AM       <DIR>          Documents and Settings
+02-25-19  09:15PM       <DIR>          inetpub
+11-09-20  01:18AM            738197504 pagefile.sys
+07-16-16  08:18AM       <DIR>          PerfLogs
+02-25-19  09:56PM       <DIR>          Program Files
+02-02-19  11:28PM       <DIR>          Program Files (x86)
+02-25-19  09:56PM       <DIR>          ProgramData
+02-03-19  07:05AM       <DIR>          Recovery
+02-03-19  07:04AM       <DIR>          System Volume Information
+02-03-19  07:08AM       <DIR>          Users
+02-25-19  10:49PM       <DIR>          Windows
+226 Transfer complete.
+ftp> cd users
+250 CWD command successful.
+ftp> cdup
+250 CDUP command successful.
+ftp> elp
+?Invalid command
+ftp> help
+Commands may be abbreviated.  Commands are:
+
+!		dir		mdelete		qc		site
+$		disconnect	mdir		sendport	size
+account		exit		mget		put		status
+append		form		mkdir		pwd		struct
+ascii		get		mls		quit		system
+bell		glob		mode		quote		sunique
+binary		hash		modtime		recv		tenex
+bye		help		mput		reget		tick
+case		idle		newer		rstatus		trace
+cd		image		nmap		rhelp		type
+cdup		ipany		nlist		rename		user
+chmod		ipv4		ntrans		reset		umask
+close		ipv6		open		restart		verbose
+cr		lcd		prompt		rmdir		?
+delete		ls		passive		runique
+debug		macdef		proxy		send
+ftp> binary
+200 Type set to I.
+ftp> ascii
+200 Type set to A.
+ftp> delet Users/
+550 Access is denied. 
+ftp> help image
+image     	set binary transfer type
+ftp> image
+200 Type set to I.
+ftp> help recv
+recv      	receive file
+ftp> cd Users/
+All Users/   Default/     Public/      desktop.ini  
+ftp> cd Users/Public/
+AccountPictures/ Documents/       Downloads/       Libraries/       Music/           Pictures/        Videos/          desktop.ini      user.txt         
+ftp> cd Users/Public/
+250 CWD command successful.
+ftp> recv user.txt
+local: user.txt remote: user.txt
+200 PORT command successful.
+125 Data connection already open; Transfer starting.
+226 Transfer complete.
+33 bytes received in 0.01 secs (2.3364 kB/s)
+ftp> help quote
+quote     	send arbitrary ftp command
+ftp> ls
+No control connection for command: Transport endpoint is not connected
+ftp> open netmon
+Connected to netmon.
+220 Microsoft FTP Service
+Name (netmon:user): Anonymous
+331 Anonymous access allowed, send identity (e-mail name) as password.
+Password:
+230 User logged in.
+Remote system type is Windows_NT.
+ftp> close
+221 Goodbye.
+ftp> open netmon
+Connected to netmon.
+220 Microsoft FTP Service
+Name (netmon:user): Anonymous
+331 Anonymous access allowed, send identity (e-mail name) as password.
+Password:
+230 User logged in.
+Remote system type is Windows_NT.
+ftp> help
+Commands may be abbreviated.  Commands are:
+
+!		dir		mdelete		qc		site
+$		disconnect	mdir		sendport	size
+account		exit		mget		put		status
+append		form		mkdir		pwd		struct
+ascii		get		mls		quit		system
+bell		glob		mode		quote		sunique
+binary		hash		modtime		recv		tenex
+bye		help		mput		reget		tick
+case		idle		newer		rstatus		trace
+cd		image		nmap		rhelp		type
+cdup		ipany		nlist		rename		user
+chmod		ipv4		ntrans		reset		umask
+close		ipv6		open		restart		verbose
+cr		lcd		prompt		rmdir		?
+delete		ls		passive		runique
+debug		macdef		proxy		send
+ftp> sent 
+Users/    user.txt  
+ftp> sent user.txt 
+?Invalid command
+ftp> send user.txt 
+local: user.txt remote: user.txt
+200 PORT command successful.
+550 Access is denied. 
+ftp> pwd
+257 "/" is current directory.
+ftp> help case
+case      	toggle mget upper/lower case id mapping
+ftp> bye
+221 Goodbye.
+
