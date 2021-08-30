@@ -9,6 +9,11 @@ import re
 import tqdm
 import select
 import sys
+import glob
+import readline
+
+
+readline.set_completer_delims(' \t\n')
 
 
 class Client(cmd.Cmd):
@@ -41,19 +46,19 @@ class Client(cmd.Cmd):
                 self.user = temp
         else:
             self.user = arg
-        self.control_sock.send(bytes(f"USER {self.user}\r\n", 'utf-8'))
+        self.control_sock.send(f"USER {self.user}\r\n".encode())
         resp = self.control_sock.recv(1024).decode()
         print(resp)
         if resp.startswith('3'):
             self.password = getpass.getpass(prompt='Password: ').strip()
-            self.control_sock.send(bytes(f"PASS {self.password}\r\n", 'utf-8'))
+            self.control_sock.send(f"PASS {self.password}\r\n".encode())
             print(self.control_sock.recv(1024).decode())
         else:
             return
 
     def do_cd(self, arg: str):
         """change remote working directory"""
-        self.control_sock.send(bytes(f"CWD {arg}\r\n", 'utf-8'))
+        self.control_sock.send(f"CWD {arg}\r\n".encode())
         print(self.control_sock.recv(1024).decode())
 
     def do_lcd(self, arg: str):
@@ -129,7 +134,7 @@ class Client(cmd.Cmd):
 
     def do_sendport(self, arg):
         """toggle use of PORT cmd for each data connection.
-           Not full implemented yet."""
+           Not fully implemented yet."""
         if arg != '':
             if arg.lower() == 'on':
                 self._port_cmd = True
@@ -150,7 +155,7 @@ class Client(cmd.Cmd):
                     break
                 except ValueError:
                     pass
-            self.control_sock.send(bytes(f"PORT {ipadder}\r\n", 'utf-8'))
+            self.control_sock.send(f"PORT {ipadder}\r\n".encode())
             print(self.control_sock.recv(1024).decode())
         else:
             address = None
@@ -243,7 +248,7 @@ class Client(cmd.Cmd):
         self._create_data_conn()
         self.control_sock.send(f"SIZE {remote_file}\r\n".encode())
         size = int(self.control_sock.recv(1024).decode().strip().split()[-1])
-        self.control_sock.send(bytes(f"RETR {remote_file}\r\n", 'utf-8'))
+        self.control_sock.send(f"RETR {remote_file}\r\n".encode())
         print(self.control_sock.recv(1024).decode())
         self._data_connection(file=local_file, get=True, size=size)
         print(self.control_sock.recv(1024).decode())
@@ -292,7 +297,7 @@ class Client(cmd.Cmd):
     def do_ls(self, arg: str = ''):
         """list contents of remote directory"""
         self._create_data_conn()
-        self.control_sock.send(bytes(f"LIST {arg}\r\n", 'utf-8'))
+        self.control_sock.send(f"LIST {arg}\r\n".encode())
         print(self.control_sock.recv(1024).decode())
         self._data_connection()
         print(self.control_sock.recv(1024).decode())
@@ -301,12 +306,12 @@ class Client(cmd.Cmd):
         """list contents of remote directory"""
         self.do_ls(arg)
 
-    def do_system(self, arg):
+    def do_system(self, arg: str):
         """get system information"""
         self.control_sock.send(b"SYST\r\n")
         print(self.control_sock.recv(1024).decode())
 
-    def do_bye(self, arg):
+    def do_bye(self, arg: str):
         """terminate ftp session and exit"""
         self.do_disconnect('')
 
@@ -323,12 +328,12 @@ class Client(cmd.Cmd):
 
     def do_delete(self, arg):
         """delete remote file"""
-        self.control_sock.send(bytes(f"DELE {arg}\r\n", 'utf-8'))
+        self.control_sock.send(f"DELE {arg}\r\n".encode())
         print(self.control_sock.recv(1024).decode())
 
     def do_size(self, arg):
         """show size of remote file"""
-        self.control_sock.send(bytes(f"SIZE {arg}\r\n", 'utf-8'))
+        self.control_sock.send(f"SIZE {arg}\r\n".encode())
         print(self.control_sock.recv(1024).decode())
 
     def do_pwd(self, arg):
@@ -338,12 +343,12 @@ class Client(cmd.Cmd):
 
     def do_mkdir(self, arg):
         """create a directory on remote machine"""
-        self.control_sock.send(bytes(f"MKD {arg}\r\n", 'utf-8'))
+        self.control_sock.send(f"MKD {arg}\r\n".encode())
         print(self.control_sock.recv(1024).decode())
 
     def do_rmdir(self, arg):
         """delete a directory on remote machine"""
-        self.control_sock.send(bytes(f"RMD {arg}\r\n", 'utf-8'))
+        self.control_sock.send(f"RMD {arg}\r\n".encode())
         print(self.control_sock.recv(1024).decode())
 
     def do_rhelp(self, arg):
@@ -360,6 +365,20 @@ class Client(cmd.Cmd):
         """terminate ftp session"""
         self.do_disconnect('')
         return True
+
+    def complete_put(self, text: str, line: str, begidx: int, endidx: int) -> list:
+        if not text:
+            arg = "*"
+        elif os.path.isdir(text):
+            if os.sep == text[-1]:
+                arg = f"{text}*"
+            else:
+                arg = os.path.join(text, "*")
+        else:
+            arg = f"{text}*"
+        return glob.glob(arg, recursive=True)
+
+    complete_send = complete_put
 
 
 if __name__ == "__main__":
