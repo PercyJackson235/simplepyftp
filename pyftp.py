@@ -181,11 +181,9 @@ class Client(cmd.Cmd):
         try:
             if get:
                 # Code in get used to be here
-                if os.sep in filename:
-                    filename = filename.split(os.sep)[-1]
                 with tqdm.tqdm(total=size) as pbar:
-                    while True:
-                        with open(filename, 'wb') as f:
+                    with open(filename, 'wb') as f:
+                        while True:
                             chunk = self.data_sock.recv(chunk_size)
                             if chunk == b'':
                                 break
@@ -193,9 +191,9 @@ class Client(cmd.Cmd):
             else:
                 chunk_size = 65000
                 size = int(os.stat(filename).st_size)
-                with tqdm.tqdm(total=size, ascii='Upload') as pbar:
-                    while True:
-                        with open(filename, 'rb') as f:
+                with tqdm.tqdm(total=size) as pbar:
+                    with open(filename, 'rb') as f:
+                        while True:
                             chunk = f.read(chunk_size)
                             if chunk == b'':
                                 break
@@ -231,22 +229,46 @@ class Client(cmd.Cmd):
         else:
             self._data_stream()
 
-    def do_get(self, arg):
+    def do_get(self, arg: str):
         """receive file"""
+        try:
+            remote_file, local_file = arg.split()
+        except ValueError:
+            remote_file = arg.strip()
+            local_file = None
+        if local_file is None:
+            local_file = os.path.basename(remote_file)
+        else:
+            local_file = os.path.abspath(os.path.expanduser(local_file))
         self._create_data_conn()
-        self.control_sock.send(f"SIZE {arg}\r\n".encode())
+        self.control_sock.send(f"SIZE {remote_file}\r\n".encode())
         size = int(self.control_sock.recv(1024).decode().strip().split()[-1])
-        self.control_sock.send(bytes(f"RETR {arg}\r\n", 'utf-8'))
+        self.control_sock.send(bytes(f"RETR {remote_file}\r\n", 'utf-8'))
         print(self.control_sock.recv(1024).decode())
-        self._data_connection(file=arg, get=True, size=size)
+        self._data_connection(file=local_file, get=True, size=size)
         print(self.control_sock.recv(1024).decode())
 
-    def do_put(self, arg):
+    def do_put(self, arg: str):
         """send one file"""
+        try:
+            local_file, remote_file = arg.split()
+            print(local_file)
+        except ValueError:
+            print("ValueError")
+            local_file = arg.strip()
+            remote_file = None
+        local_file = os.path.abspath(os.path.expanduser(local_file))
+        if not os.path.exists(local_file):
+            print(f"file {local_file} is does not exist!")
+            return
         self._create_data_conn()
-        self.control_sock.send(f"STOR {arg}\r\n".encode())
+        if remote_file is None:
+            sent_file = os.path.basename(local_file)
+        else:
+            sent_file = remote_file
+        self.control_sock.send(f"STOR {sent_file}\r\n".encode())
         print(self.control_sock.recv(1024).decode())
-        self._data_connection(file=arg)
+        self._data_connection(file=local_file)
         print(self.control_sock.recv(1024).decode())
 
     def do_send(self, arg):
